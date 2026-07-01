@@ -44,6 +44,7 @@ export function computeInsights(
   };
 
   for (const ev of events) {
+    if (ev.removed) continue;
     if (ev.type === "result") {
       const white = ev.teamWhite ?? [];
       const black = ev.teamBlack ?? [];
@@ -81,7 +82,7 @@ export function computeInsights(
 
   // --- rachas de invicto (evento cronológico ascendente) ---
   const chrono = [...events]
-    .filter((e) => e.type === "result" || e.type === "draw")
+    .filter((e) => !e.removed && (e.type === "result" || e.type === "draw"))
     .sort((x, y) => x.createdAt.localeCompare(y.createdAt));
 
   const streak = new Map<string, number>();

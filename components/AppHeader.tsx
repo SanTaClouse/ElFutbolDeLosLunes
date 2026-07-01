@@ -11,7 +11,7 @@ const TITLES: Record<Tab, [string, string]> = {
 };
 
 export function AppHeader() {
-  const { tab, user, logout } = useApp();
+  const { tab, user, openProfile } = useApp();
   const [kicker, title] = TITLES[tab];
 
   return (
@@ -25,8 +25,8 @@ export function AppHeader() {
         </div>
       </div>
       <button
-        onClick={logout}
-        title="Cambiar de usuario"
+        onClick={openProfile}
+        title="Tu perfil"
         className="flex items-center gap-[9px] rounded-full border border-line bg-white py-[5px] pl-[5px] pr-3 shadow-chip"
       >
         <Avatar

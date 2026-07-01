@@ -106,8 +106,17 @@ export class MockRepo implements Repo {
     return event;
   }
 
-  async removeEvent(id: string): Promise<void> {
-    this.store.events = this.store.events.filter((e) => e.id !== id);
+  async removeEvent(id: string, removedBy: string): Promise<void> {
+    this.store.events = this.store.events.map((e) =>
+      e.id === id
+        ? {
+            ...e,
+            removed: true,
+            removedBy,
+            removedAt: new Date().toISOString(),
+          }
+        : e
+    );
     this.save();
   }
 }

@@ -16,6 +16,9 @@ interface EventRow {
   reason_label: string | null;
   added_by: string | null;
   delta: number | null;
+  removed: boolean | null;
+  removed_by: string | null;
+  removed_at: string | null;
 }
 
 function rowToEvent(r: EventRow): GameEvent {
@@ -32,6 +35,9 @@ function rowToEvent(r: EventRow): GameEvent {
     reasonLabel: r.reason_label ?? undefined,
     addedBy: r.added_by ?? undefined,
     delta: r.delta ?? undefined,
+    removed: r.removed ?? undefined,
+    removedBy: r.removed_by ?? undefined,
+    removedAt: r.removed_at ?? undefined,
   };
 }
 
@@ -56,9 +62,19 @@ export class SupabaseRepo implements Repo {
   }
 
   async addPlayer(name: string): Promise<Player> {
+    const clean = name.trim();
+    // evita duplicados por nombre (case-insensitive)
+    const existing = await getSupabase()
+      .from("players")
+      .select("id, name")
+      .ilike("name", clean)
+      .limit(1)
+      .maybeSingle();
+    if (existing.data) return existing.data as Player;
+
     const { data, error } = await getSupabase()
       .from("players")
-      .insert({ name: name.trim() })
+      .insert({ name: clean })
       .select("id, name")
       .single();
     if (error) throw error;
@@ -100,8 +116,15 @@ export class SupabaseRepo implements Repo {
     return rowToEvent(data as EventRow);
   }
 
-  async removeEvent(id: string): Promise<void> {
-    const { error } = await getSupabase().from("events").delete().eq("id", id);
+  async removeEvent(id: string, removedBy: string): Promise<void> {
+    const { error } = await getSupabase()
+      .from("events")
+      .update({
+        removed: true,
+        removed_by: removedBy,
+        removed_at: new Date().toISOString(),
+      })
+      .eq("id", id);
     if (error) throw error;
   }
 }

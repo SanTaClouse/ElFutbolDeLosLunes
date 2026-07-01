@@ -21,6 +21,7 @@ export function computeStandings(
   }
 
   for (const ev of events) {
+    if (ev.removed) continue; // los movimientos quitados no suman
     if (ev.type === "result") {
       const white = ev.teamWhite ?? [];
       const black = ev.teamBlack ?? [];

@@ -62,6 +62,26 @@ const config: Config = {
           "0%": { transform: "translateY(100%)" },
           "100%": { transform: "translateY(0)" },
         },
+        "podium-rise": {
+          "0%": { opacity: "0", transform: "translateY(18px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "pedestal-grow": {
+          "0%": { transform: "scaleY(0)" },
+          "100%": { transform: "scaleY(1)" },
+        },
+        shine: {
+          "0%": { transform: "translateX(-140%) skewX(-18deg)" },
+          "100%": { transform: "translateX(340%) skewX(-18deg)" },
+        },
+        float: {
+          "0%,100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-4px)" },
+        },
+        glow: {
+          "0%,100%": { boxShadow: "0 0 0 0 rgba(143,224,172,0)" },
+          "50%": { boxShadow: "0 0 18px 3px rgba(143,224,172,.55)" },
+        },
       },
       animation: {
         pop: "pop .3s ease both",
@@ -69,6 +89,12 @@ const config: Config = {
         "up-slow": "up .6s ease both",
         toast: "toast 2.4s ease both",
         sheet: "sheet .3s cubic-bezier(.2,.8,.2,1) both",
+        "podium-rise": "podium-rise .55s cubic-bezier(.2,.8,.2,1) both",
+        "pedestal-grow":
+          "pedestal-grow .5s cubic-bezier(.2,.8,.2,1) both",
+        shine: "shine 1.7s ease-in-out .35s 1",
+        float: "float 3s ease-in-out infinite",
+        glow: "glow 2.6s ease-in-out infinite",
       },
     },
   },

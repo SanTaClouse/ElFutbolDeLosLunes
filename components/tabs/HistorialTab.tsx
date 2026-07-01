@@ -15,14 +15,18 @@ const ICON_BG = {
 export function HistorialTab() {
   const { events, players, removeEvent, openExtra } = useApp();
   const nameById = new Map(players.map((p) => [p.id, p.name]));
+  const names = (ids: string[] | undefined) =>
+    (ids ?? []).map((id) => nameById.get(id)).filter(Boolean) as string[];
 
   const feed = [...events].sort((a, b) =>
     b.createdAt.localeCompare(a.createdAt)
   );
 
-  const totalMatches = events.filter((e) => e.type !== "extra").length;
+  const totalMatches = events.filter(
+    (e) => e.type !== "extra" && !e.removed
+  ).length;
   const totalExtra = events
-    .filter((e) => e.type === "extra")
+    .filter((e) => e.type === "extra" && !e.removed)
     .reduce((a, e) => a + (e.delta ?? 1), 0);
 
   const describe = (h: GameEvent) => {
@@ -33,22 +37,23 @@ export function HistorialTab() {
         }`,
         sub: `${h.reasonLabel ?? "Punto extra"} · ${shortDate(h.occurredOn)}`,
         delta: h.delta ?? 1,
+        members: null as string[] | null,
       };
     }
     if (h.type === "result") {
       const winners = h.winner === "Blancos" ? h.teamWhite : h.teamBlack;
       return {
         title: `Ganó ${h.winner}`,
-        sub: `+3 a ${winners?.length ?? 5} jugadores · ${shortDate(
-          h.occurredOn
-        )}`,
+        sub: `+3 c/u · ${shortDate(h.occurredOn)}`,
         delta: 3,
+        members: names(winners),
       };
     }
     return {
       title: "Empate",
-      sub: `+1 a todos · ${shortDate(h.occurredOn)}`,
+      sub: `+1 a los 10 · ${shortDate(h.occurredOn)}`,
       delta: 1,
+      members: null,
     };
   };
 
@@ -87,35 +92,70 @@ export function HistorialTab() {
       <div className="flex flex-col gap-[9px]">
         {feed.map((h) => {
           const d = describe(h);
+          const removed = Boolean(h.removed);
           return (
             <div
               key={h.id}
-              className="flex items-center gap-3 rounded-2xl border border-line bg-white px-3.5 py-3"
+              className={`rounded-2xl border border-line bg-white px-3.5 py-3 ${
+                removed ? "opacity-60" : ""
+              }`}
             >
-              <span
-                className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-[11px] text-base"
-                style={{ background: ICON_BG[h.type] }}
-              >
-                {ICON[h.type]}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="text-[13.5px] font-bold leading-[1.3] text-ink">
-                  {d.title}
+              <div className="flex items-center gap-3">
+                <span
+                  className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-[11px] text-base"
+                  style={{ background: ICON_BG[h.type] }}
+                >
+                  {ICON[h.type]}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div
+                    className={`text-[13.5px] font-bold leading-[1.3] text-ink ${
+                      removed ? "line-through" : ""
+                    }`}
+                  >
+                    {d.title}
+                  </div>
+                  <div className="mt-0.5 text-[11.5px] font-semibold text-faint">
+                    {d.sub}
+                  </div>
                 </div>
-                <div className="mt-0.5 text-[11.5px] font-semibold text-faint">
-                  {d.sub}
-                </div>
+                <span
+                  className={`tabular font-display text-sm font-bold ${
+                    removed ? "text-faint line-through" : "text-primary"
+                  }`}
+                >
+                  +{d.delta}
+                </span>
+                {!removed && (
+                  <button
+                    onClick={() => removeEvent(h.id)}
+                    title="Quitar movimiento"
+                    className="flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-lg bg-appbg text-danger transition hover:bg-dangerbg"
+                  >
+                    <IconMinus size={14} />
+                  </button>
+                )}
               </div>
-              <span className="tabular font-display text-sm font-bold text-primary">
-                +{d.delta}
-              </span>
-              <button
-                onClick={() => removeEvent(h.id)}
-                title="Quitar movimiento"
-                className="flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-lg bg-appbg text-danger transition hover:bg-dangerbg"
-              >
-                <IconMinus size={14} />
-              </button>
+
+              {d.members && d.members.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5 pl-[50px]">
+                  {d.members.map((n, i) => (
+                    <span
+                      key={i}
+                      className="rounded-full bg-appbg px-2 py-0.5 text-[11px] font-bold text-muted"
+                    >
+                      {n}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {removed && (
+                <div className="mt-2 pl-[50px] text-[11px] font-semibold text-danger">
+                  Quitado por {h.removedBy ?? "alguien"}
+                  {h.removedAt ? ` · ${shortDate(h.removedAt.slice(0, 10))}` : ""}
+                </div>
+              )}
             </div>
           );
         })}

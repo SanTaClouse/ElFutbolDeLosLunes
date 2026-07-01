@@ -2,9 +2,7 @@
 
 import { useApp } from "../store";
 import { Avatar } from "../Avatar";
-import { initial } from "@/lib/format";
-
-const MEDALS = ["🥇", "🥈", "🥉"];
+import { Podium } from "../Podium";
 
 export function TablaTab() {
   const { standings, insights, user } = useApp();
@@ -13,35 +11,7 @@ export function TablaTab() {
   return (
     <div className="animate-up">
       {/* Podio */}
-      <div className="mb-3.5 flex items-end gap-[9px] rounded-3xl bg-gradient-to-br from-brand to-brand2 px-4 pb-4 pt-5 shadow-podium">
-        {podium.map((s, i) => {
-          const big = i === 0;
-          return (
-            <div
-              key={s.player.id}
-              className="flex flex-1 flex-col items-center gap-[7px]"
-            >
-              <div className="text-base">{MEDALS[i]}</div>
-              <span
-                className="flex items-center justify-center rounded-full bg-white/95 font-extrabold text-brand2 shadow-[0_4px_10px_-4px_rgba(0,0,0,.4)]"
-                style={{
-                  width: big ? 56 : 46,
-                  height: big ? 56 : 46,
-                  fontSize: big ? 22 : 18,
-                }}
-              >
-                {initial(s.player.name)}
-              </span>
-              <div className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[13.5px] font-bold text-white">
-                {s.player.name}
-              </div>
-              <div className="tabular font-display text-[15px] font-bold text-lightgreen">
-                {s.pts} pts
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <Podium top={podium} me={user} />
 
 
 

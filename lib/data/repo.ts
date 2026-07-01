@@ -21,7 +21,8 @@ export interface Repo {
   addPlayer(name: string): Promise<Player>;
   addResult(input: AddResultInput): Promise<GameEvent>;
   addExtra(input: AddExtraInput): Promise<GameEvent>;
-  removeEvent(id: string): Promise<void>;
+  /** Baja lógica: marca el evento como quitado y guarda quién lo hizo. */
+  removeEvent(id: string, removedBy: string): Promise<void>;
 }
 
 export function newId(prefix = "id"): string {

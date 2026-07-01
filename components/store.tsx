@@ -21,7 +21,12 @@ import { computeStandings } from "@/lib/points";
 import { computeInsights, Insight } from "@/lib/insights";
 import { parseRoster } from "@/lib/parse";
 import { balanceTeams, BuilderSlot, toSlot } from "@/lib/balance";
-import { buildShareMessage } from "@/lib/share";
+import {
+  buildShareMessage,
+  buildShareUrl,
+  decodeTeams,
+  SharedTeams,
+} from "@/lib/share";
 import { getRepo, usingSupabase } from "@/lib/data";
 
 export type Tab = "tabla" | "armar" | "registrar" | "historial";
@@ -48,7 +53,15 @@ interface AppContextValue {
   go: (tab: Tab) => void;
 
   pick: (name: string) => void;
+  createAndPick: (name: string) => Promise<void>;
   logout: () => void;
+  openProfile: () => void;
+  confirmRemember: (yes: boolean) => void;
+
+  // equipos que llegan por el link compartido (vista de solo lectura)
+  sharedTeams: SharedTeams | null;
+  dismissShared: () => void;
+  shareUrl: string;
 
   // builder
   builderInput: string;
@@ -70,7 +83,7 @@ interface AppContextValue {
   confirmResult: () => Promise<void>;
 
   // modals + toast
-  modal: null | "extra" | "share";
+  modal: null | "extra" | "share" | "profile" | "remember";
   openExtra: () => void;
   openShare: () => void;
   closeModal: () => void;
@@ -101,7 +114,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selected, setSelected] = useState<Selected>(null);
 
   const [outcome, setOutcome] = useState<Outcome | null>(null);
-  const [modal, setModal] = useState<null | "extra" | "share">(null);
+  const [modal, setModal] = useState<
+    null | "extra" | "share" | "profile" | "remember"
+  >(null);
+  const [sharedTeams, setSharedTeams] = useState<SharedTeams | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const toastId = useRef(0);
 
@@ -130,6 +146,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         console.error("Error cargando datos", e);
       }
       if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get("t");
+        if (t) {
+          const decoded = decodeTeams(t);
+          if (decoded) setSharedTeams(decoded);
+        }
         const saved = window.localStorage.getItem(USER_KEY);
         if (saved) setUser(saved);
       }
@@ -170,15 +192,49 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const pick = useCallback((name: string) => {
     setUser(name);
     setTab("tabla");
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(USER_KEY, name);
-    }
+    setModal("remember"); // pregunta una vez si quiere quedar guardado
   }, []);
+
+  const createAndPick = useCallback(
+    async (name: string) => {
+      const clean = name.trim();
+      if (!clean) return;
+      const repo = getRepo();
+      const p = await repo.addPlayer(clean);
+      await refresh();
+      setUser(p.name);
+      setTab("tabla");
+      setModal("remember");
+    },
+    [refresh]
+  );
+
+  const confirmRemember = useCallback(
+    (yes: boolean) => {
+      if (yes && user && typeof window !== "undefined") {
+        window.localStorage.setItem(USER_KEY, user);
+      }
+      setModal(null);
+    },
+    [user]
+  );
+
+  const openProfile = useCallback(() => setModal("profile"), []);
 
   const logout = useCallback(() => {
     setUser(null);
+    setModal(null);
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(USER_KEY);
+    }
+  }, []);
+
+  const dismissShared = useCallback(() => {
+    setSharedTeams(null);
+    if (typeof window !== "undefined" && window.history?.replaceState) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("t");
+      window.history.replaceState({}, "", url.toString());
     }
   }, []);
 
@@ -267,11 +323,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const removeEvent = useCallback(
     async (id: string) => {
       const repo = getRepo();
-      await repo.removeEvent(id);
+      await repo.removeEvent(id, user || "Alguien");
       await refresh();
-      showToast("Movimiento eliminado");
+      showToast("Movimiento quitado");
     },
-    [refresh, showToast]
+    [refresh, showToast, user]
   );
 
   const whitesPts = useMemo(
@@ -282,9 +338,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     () => blacks.reduce((a, s) => a + s.pts, 0),
     [blacks]
   );
-  const shareMsg = useMemo(
-    () => buildShareMessage(whites, blacks, leader),
+  const shareUrl = useMemo(
+    () => buildShareUrl(whites, blacks, leader),
     [whites, blacks, leader]
+  );
+  const shareMsg = useMemo(
+    () => buildShareMessage(whites, blacks, leader, shareUrl),
+    [whites, blacks, leader, shareUrl]
   );
 
   const value: AppContextValue = {
@@ -300,7 +360,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     tab,
     go,
     pick,
+    createAndPick,
     logout,
+    openProfile,
+    confirmRemember,
+    sharedTeams,
+    dismissShared,
+    shareUrl,
     builderInput,
     setBuilderInput,
     whites,

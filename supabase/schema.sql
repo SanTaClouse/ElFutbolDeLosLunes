@@ -29,6 +29,10 @@ create table if not exists public.events (
   reason_label text,
   added_by     text,
   delta        integer,
+  -- baja lógica (trazabilidad de quién quitó un movimiento)
+  removed      boolean not null default false,
+  removed_by   text,
+  removed_at   timestamptz,
   created_at   timestamptz not null default now()
 );
 

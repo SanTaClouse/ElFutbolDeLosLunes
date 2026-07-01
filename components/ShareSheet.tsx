@@ -19,8 +19,20 @@ export function ShareSheet() {
     showToast("Mensaje copiado ✓");
   };
 
-  const openWhatsApp = () => {
-    const url = `https://wa.me/?text=${encodeURIComponent(shareMsg)}`;
+  const openWhatsApp = async () => {
+    // navigator.share pasa el texto EXACTO al sistema (sin romper emojis).
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ text: shareMsg });
+        closeModal();
+        return;
+      } catch {
+        /* cancelado o no soportado -> fallback */
+      }
+    }
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(
+      shareMsg
+    )}`;
     if (typeof window !== "undefined") window.open(url, "_blank");
     closeModal();
   };

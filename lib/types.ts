@@ -34,6 +34,12 @@ export interface GameEvent {
   reasonLabel?: string;
   addedBy?: string; // nombre de quien lo cargó
   delta?: number; // puntos otorgados por el evento extra
+
+  // trazabilidad de bajas (soft-delete): el movimiento no suma más puntos,
+  // pero queda registrado quién lo quitó y cuándo.
+  removed?: boolean;
+  removedBy?: string;
+  removedAt?: string;
 }
 
 export interface Standing {
