@@ -1,8 +1,8 @@
 "use client";
 
 import { useApp } from "../store";
-import { Avatar } from "../Avatar";
 import { Podium } from "../Podium";
+import { StandingsTable } from "../StandingsTable";
 
 export function TablaTab() {
   const { standings, insights, user } = useApp();
@@ -20,49 +20,11 @@ export function TablaTab() {
         <span className="text-sm font-extrabold text-ink">
           Tabla de posiciones
         </span>
-        <span className="text-xs font-semibold text-faint">PJ · PTS</span>
+        <span className="text-xs font-semibold text-faint">
+          {standings.length} jugadores
+        </span>
       </div>
-      <div className="overflow-hidden rounded-[20px] border border-line bg-white shadow-card">
-        {standings.map((s, i) => {
-          const isMe = s.player.name === user;
-          return (
-            <div
-              key={s.player.id}
-              className="flex items-center gap-3 border-t border-line2 px-3.5 py-[11px] first:border-t-0"
-              style={isMe ? { background: "#F1FAF3" } : undefined}
-            >
-              <span
-                className="tabular w-[22px] text-center font-display text-sm font-bold"
-                style={{ color: i < 3 ? "#0C7C3D" : "#9AA39B" }}
-              >
-                {i + 1}
-              </span>
-              <Avatar
-                name={s.player.name}
-                size={34}
-                className={isMe ? "bg-brand text-white" : "bg-avatarbg text-brand"}
-              />
-              <div className="min-w-0 flex-1">
-                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-[14.5px] font-bold text-ink">
-                  {s.player.name}
-                  {isMe && (
-                    <span className="font-semibold text-faint"> · vos</span>
-                  )}
-                </div>
-                <div className="text-[11.5px] font-semibold text-faint">
-                  G{s.g} · E{s.e} · P{s.p}
-                </div>
-              </div>
-              <span className="tabular w-[26px] text-right text-[11px] font-bold text-faint">
-                {s.pj}
-              </span>
-              <span className="tabular w-[38px] text-right font-display text-[17px] font-bold text-ink">
-                {s.pts}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+      <StandingsTable standings={standings} me={user} />
       {/* Patrones */}
       {insights.length > 0 && (
         <>

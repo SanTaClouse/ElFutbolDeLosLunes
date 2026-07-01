@@ -35,7 +35,13 @@ export class MockRepo implements Repo {
         /* ignora storage corrupto */
       }
     }
-    const seeded: Store = { players: seedPlayers, events: seedEvents() };
+    // Los datos de ejemplo (partidos/puntos falsos) solo se cargan en
+    // desarrollo. En producción sin Supabase, el mock arranca vacío para no
+    // mostrar data falsa. Lo real vive en Supabase.
+    const isDev = process.env.NODE_ENV === "development";
+    const seeded: Store = isDev
+      ? { players: seedPlayers, events: seedEvents() }
+      : { players: [], events: [] };
     this.persist(seeded);
     return seeded;
   }
