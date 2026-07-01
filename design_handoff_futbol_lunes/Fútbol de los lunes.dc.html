@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0}
+  ::-webkit-scrollbar{width:0;height:0}
+  @keyframes flu-pop{0%{transform:scale(.92);opacity:0}100%{transform:scale(1);opacity:1}}
+  @keyframes flu-up{0%{transform:translateY(10px);opacity:0}100%{transform:translateY(0);opacity:1}}
+  @keyframes flu-toast{0%{transform:translate(-50%,20px);opacity:0}12%{transform:translate(-50%,0);opacity:1}88%{transform:translate(-50%,0);opacity:1}100%{transform:translate(-50%,20px);opacity:0}}
+  @keyframes flu-sheet{0%{transform:translateY(100%)}100%{transform:translateY(0)}}
+</style>
+</helmet>
+
+<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 100% at 50% 0%, #EEF2EC 0%, #DFE6DC 60%, #D3DCCF 100%);padding:28px 16px;font-family:Manrope,system-ui,sans-serif">
+  <div style="position:relative;width:402px;height:844px;background:#F4F6F3;border-radius:46px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(20,40,20,.45),0 0 0 11px #10160F,0 0 0 12px #2b2f2a;display:flex;flex-direction:column">
+
+    <!-- status bar -->
+    <div style="height:46px;flex:0 0 auto;display:flex;align-items:flex-end;justify-content:space-between;padding:0 26px 6px;font-size:14px;font-weight:700;color:#10160F;letter-spacing:.3px">
+      <span>20:00</span>
+      <div style="position:absolute;left:50%;top:9px;transform:translateX(-50%);width:104px;height:26px;background:#10160F;border-radius:0 0 16px 16px"></div>
+      <span style="display:flex;gap:5px;align-items:center;font-size:12px">▪▪▪ &nbsp;100%</span>
+    </div>
+
+    <!-- ===================== ONBOARDING ===================== -->
+    <sc-if value="{{ showOnboarding }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;inset:0;z-index:40;background:linear-gradient(180deg,#0C7C3D 0%,#0A6A35 42%,#08532A 100%);display:flex;flex-direction:column;padding:64px 28px 30px;color:#fff">
+        <div style="flex:0 0 auto;text-align:center;animation:flu-up .5s ease both">
+          <div style="width:96px;height:96px;margin:0 auto 22px;border-radius:28px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+              <circle cx="28" cy="28" r="24" fill="#fff"/>
+              <polygon points="28,15 38,22.5 34,34 22,34 18,22.5" fill="#10160F"/>
+              <path d="M28 15 L28 4 M38 22.5 L48 19 M34 34 L41 44 M22 34 L15 44 M18 22.5 L8 19" stroke="#10160F" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#8FE0AC">Fútbol de los</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:52px;line-height:.95;font-weight:700;margin-top:2px">Lunes</div>
+          <div style="margin-top:14px;font-size:15px;color:rgba(255,255,255,.72);font-weight:500">Elegí tu nombre para entrar</div>
+        </div>
+
+        <div style="flex:1;margin-top:26px;overflow-y:auto;animation:flu-up .6s ease both">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <sc-for list="{{ roster }}" as="p" hint-placeholder-count="8">
+              <button onClick="{{ p.onPick }}" style="display:flex;align-items:center;gap:11px;padding:12px 13px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);border-radius:16px;color:#fff;font-family:Manrope;font-size:15px;font-weight:600;cursor:pointer;text-align:left" style-hover="background:rgba(255,255,255,.2)">
+                <span style="width:30px;height:30px;flex:0 0 auto;border-radius:50%;background:rgba(255,255,255,.9);color:#0A6A35;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px">{{ p.initial }}</span>
+                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="flex:0 0 auto;text-align:center;font-size:12.5px;color:rgba(255,255,255,.5);padding-top:14px">No tenés que crear cuenta. Tu nombre es tu acceso.</div>
+      </div>
+    </sc-if>
+
+    <!-- ===================== APP HEADER ===================== -->
+    <div style="flex:0 0 auto;padding:6px 20px 12px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#12A150">{{ headerKicker }}</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#10160F;line-height:1.05;margin-top:1px">{{ headerTitle }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #E7ECE6;border-radius:999px;padding:5px 12px 5px 5px;box-shadow:0 2px 8px -4px rgba(20,40,20,.2)">
+        <span style="width:30px;height:30px;border-radius:50%;background:#0C7C3D;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px">{{ userInitial }}</span>
+        <span style="font-size:13.5px;font-weight:700;color:#10160F">{{ userName }}</span>
+      </div>
+    </div>
+
+    <!-- ===================== SCROLL AREA ===================== -->
+    <div style="flex:1;overflow-y:auto;padding:0 16px 24px">
+
+      <!-- ---------- TABLA ---------- -->
+      <sc-if value="{{ isTabla }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <!-- podium -->
+          <div style="display:flex;align-items:flex-end;gap:9px;background:linear-gradient(165deg,#0C7C3D,#0A6A35);border-radius:24px;padding:20px 16px 16px;margin-bottom:14px;box-shadow:0 14px 30px -16px rgba(12,124,61,.7)">
+            <sc-for list="{{ podium }}" as="p" hint-placeholder-count="3">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px" style-hover="opacity:.92">
+                <div style="font-size:16px">{{ p.medal }}</div>
+                <div style="border-radius:50%;background:rgba(255,255,255,.95);color:#0A6A35;display:flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 4px 10px -4px rgba(0,0,0,.4)" style="{{ p.avatarStyle }}">{{ p.initial }}</div>
+                <div style="color:#fff;font-weight:700;font-size:13.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</div>
+                <div style="font-family:'Space Grotesk';font-variant-numeric:tabular-nums;color:#8FE0AC;font-weight:700;font-size:15px">{{ p.pts }} pts</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <!-- insights strip -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 2px 9px">
+            <span style="font-size:14px;font-weight:800;color:#10160F">Patrones detectados</span>
+            <span style="font-size:12px;font-weight:700;color:#12A150">Automático</span>
+          </div>
+          <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;margin:0 -16px;padding-left:16px;padding-right:16px">
+            <sc-for list="{{ insights }}" as="it" hint-placeholder-count="3">
+              <div style="flex:0 0 78%;background:#fff;border:1px solid #E7ECE6;border-radius:18px;padding:14px 15px;box-shadow:0 3px 10px -6px rgba(20,40,20,.25)">
+                <span style="display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#0C7C3D;background:#E9F7EE;padding:3px 8px;border-radius:999px">{{ it.tag }}</span>
+                <div style="font-size:15px;font-weight:800;color:#10160F;margin-top:9px">{{ it.title }}</div>
+                <div style="font-size:12.5px;color:#5A635A;margin-top:4px;line-height:1.4">{{ it.desc }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <!-- full table -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 2px 9px">
+            <span style="font-size:14px;font-weight:800;color:#10160F">Tabla de posiciones</span>
+            <span style="font-size:12px;font-weight:600;color:#9AA39B">PJ · PTS</span>
+          </div>
+          <div style="background:#fff;border:1px solid #E7ECE6;border-radius:20px;overflow:hidden;box-shadow:0 4px 14px -8px rgba(20,40,20,.22)">
+            <sc-for list="{{ standings }}" as="p" hint-placeholder-count="12">
+              <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-top:1px solid #F0F3EF" style="{{ p.rowStyle }}">
+                <span style="width:22px;text-align:center;font-family:'Space Grotesk';font-weight:700;font-size:14px;color:#9AA39B;font-variant-numeric:tabular-nums" style="{{ p.rankStyle }}">{{ p.rank }}</span>
+                <span style="width:34px;height:34px;flex:0 0 auto;border-radius:50%;background:#EEF3EC;color:#0C7C3D;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px" style="{{ p.avatarStyle }}">{{ p.initial }}</span>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:14.5px;font-weight:700;color:#10160F;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}{{ p.youTag }}</div>
+                  <div style="font-size:11.5px;color:#9AA39B;font-weight:600">{{ p.record }}</div>
+                </div>
+                <span style="font-size:11px;color:#9AA39B;font-weight:700;width:26px;text-align:right;font-variant-numeric:tabular-nums">{{ p.pj }}</span>
+                <span style="font-family:'Space Grotesk';font-weight:700;font-size:17px;color:#10160F;width:38px;text-align:right;font-variant-numeric:tabular-nums">{{ p.pts }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="height:6px"></div>
+        </div>
+      </sc-if>
+
+      <!-- ---------- ARMAR ---------- -->
+      <sc-if value="{{ isArmar }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="font-size:13px;color:#5A635A;font-weight:600;margin:2px 2px 8px">Pegá la lista del grupo y la app arma dos equipos parejos.</div>
+          <textarea value="{{ builderInput }}" onChange="{{ onInput }}" placeholder="Pegá el mensaje de WhatsApp…" style="width:100%;height:118px;resize:none;border:1px solid #E7ECE6;border-radius:16px;padding:13px 14px;font-family:Manrope;font-size:13.5px;line-height:1.5;color:#10160F;background:#fff;outline:none" style-focus="border-color:#12A150"></textarea>
+          <div style="display:flex;gap:9px;margin-top:10px">
+            <button onClick="{{ onParse }}" style="flex:1;padding:13px;border:none;border-radius:14px;background:#0C7C3D;color:#fff;font-family:Manrope;font-weight:800;font-size:14.5px;cursor:pointer;box-shadow:0 6px 16px -8px rgba(12,124,61,.9)" style-hover="background:#0a6a35">Armar equipos</button>
+            <button onClick="{{ onShuffle }}" style="flex:0 0 auto;padding:13px 16px;border:1px solid #E7ECE6;border-radius:14px;background:#fff;color:#10160F;font-family:Manrope;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:7px" style-hover="background:#F4F6F3">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+              Otra
+            </button>
+          </div>
+
+          <sc-if value="{{ teamsReady }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top:16px;animation:flu-up .35s ease both">
+              <div style="text-align:center;font-size:12px;font-weight:700;color:#9AA39B;margin-bottom:10px">Tocá un jugador de cada equipo para intercambiarlos</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <!-- Blancos -->
+                <div style="background:#fff;border:1px solid #E7ECE6;border-radius:20px;overflow:hidden">
+                  <div style="padding:11px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #F0F3EF">
+                    <span style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;color:#10160F"><span style="width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #10160F"></span>Blancos</span>
+                    <span style="font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#12A150">{{ whitesPts }}</span>
+                  </div>
+                  <sc-for list="{{ whitesView }}" as="p" hint-placeholder-count="5">
+                    <button onClick="{{ p.onTap }}" style="width:100%;display:flex;align-items:center;gap:9px;padding:10px 13px;border:none;border-top:1px solid #F4F6F3;background:transparent;cursor:pointer;text-align:left;font-family:Manrope" style="{{ p.style }}">
+                      <span style="font-family:'Space Grotesk';font-weight:700;font-size:12px;color:#9AA39B;width:12px">{{ p.num }}</span>
+                      <span style="flex:1;font-size:14px;font-weight:700;color:#10160F;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</span>
+                      <span style="font-size:11px;font-weight:700;color:#9AA39B;font-variant-numeric:tabular-nums">{{ p.pts }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+                <!-- Negros -->
+                <div style="background:#17201A;border:1px solid #17201A;border-radius:20px;overflow:hidden">
+                  <div style="padding:11px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.1)">
+                    <span style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;color:#fff"><span style="width:14px;height:14px;border-radius:50%;background:#17201A;border:2px solid #fff"></span>Negros</span>
+                    <span style="font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#8FE0AC">{{ blacksPts }}</span>
+                  </div>
+                  <sc-for list="{{ blacksView }}" as="p" hint-placeholder-count="5">
+                    <button onClick="{{ p.onTap }}" style="width:100%;display:flex;align-items:center;gap:9px;padding:10px 13px;border:none;border-top:1px solid rgba(255,255,255,.07);background:transparent;cursor:pointer;text-align:left;font-family:Manrope" style="{{ p.style }}">
+                      <span style="font-family:'Space Grotesk';font-weight:700;font-size:12px;color:rgba(255,255,255,.5);width:12px">{{ p.num }}</span>
+                      <span style="flex:1;font-size:14px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</span>
+                      <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);font-variant-numeric:tabular-nums">{{ p.pts }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="text-align:center;font-size:12px;color:#9AA39B;margin-top:9px;font-weight:600">Diferencia de puntos: <b style="color:#10160F">{{ teamDiff }}</b> · lo más parejo posible</div>
+              <button onClick="{{ onShare }}" style="width:100%;margin-top:12px;padding:14px;border:none;border-radius:14px;background:#12A150;color:#fff;font-family:Manrope;font-weight:800;font-size:14.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 8px 18px -8px rgba(18,161,80,.9)" style-hover="background:#0f8f46">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                Compartir en el grupo
+              </button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ---------- REGISTRAR ---------- -->
+      <sc-if value="{{ isReg }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <sc-if value="{{ teamsReady }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <div style="font-size:13px;color:#5A635A;font-weight:600;margin:2px 2px 10px">¿Quién ganó el partido de hoy?</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <button onClick="{{ setWinBlancos }}" style="padding:15px 10px;border-radius:16px;cursor:pointer;font-family:Manrope;display:flex;flex-direction:column;align-items:center;gap:7px" style="{{ styBlancos }}">
+                  <span style="width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid #10160F"></span>
+                  <span style="font-weight:800;font-size:14px">Blancos</span>
+                </button>
+                <button onClick="{{ setWinNegros }}" style="padding:15px 10px;border-radius:16px;cursor:pointer;font-family:Manrope;display:flex;flex-direction:column;align-items:center;gap:7px" style="{{ styNegros }}">
+                  <span style="width:26px;height:26px;border-radius:50%;background:#17201A;border:2px solid #17201A;box-shadow:0 0 0 1.5px #fff inset"></span>
+                  <span style="font-weight:800;font-size:14px">Negros</span>
+                </button>
+              </div>
+              <button onClick="{{ setWinEmpate }}" style="width:100%;margin-top:10px;padding:13px;border-radius:16px;cursor:pointer;font-family:Manrope;font-weight:800;font-size:14px" style="{{ styEmpate }}">Empate</button>
+
+              <sc-if value="{{ hasWinner }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:14px;background:#E9F7EE;border:1px solid #CDEDD9;border-radius:16px;padding:13px 15px;animation:flu-up .3s ease both">
+                  <div style="font-size:13px;font-weight:800;color:#0C7C3D">{{ regSummary }}</div>
+                  <div style="font-size:12.5px;color:#3f7a55;margin-top:3px">{{ regDetail }}</div>
+                </div>
+              </sc-if>
+
+              <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 2px 9px">
+                <span style="font-size:14px;font-weight:800;color:#10160F">Puntos extra</span>
+                <span style="font-size:12px;font-weight:700;color:#12A150">+1 c/u</span>
+              </div>
+              <button onClick="{{ openExtra }}" style="width:100%;padding:13px;border:1.5px dashed #C4D2C4;border-radius:14px;background:#fff;color:#0C7C3D;font-family:Manrope;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:#F4F6F3">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Sumar punto extra a un jugador
+              </button>
+              <div style="font-size:11.5px;color:#9AA39B;margin-top:8px;text-align:center;line-height:1.4">Gol de cabeza · gol de mitad de cancha · 5+ goles · 3 invicto</div>
+
+              <button onClick="{{ onConfirmResult }}" style="width:100%;margin-top:16px;padding:15px;border:none;border-radius:14px;font-family:Manrope;font-weight:800;font-size:15px;cursor:pointer" style="{{ styConfirm }}">Confirmar resultado</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noTeams }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:60px 20px;color:#9AA39B">
+              <div style="font-size:15px;font-weight:700;color:#10160F">Primero armá los equipos</div>
+              <div style="font-size:13px;margin-top:6px">Andá a la pestaña “Armar” para cargar la lista del partido.</div>
+              <button onClick="{{ goArmar }}" style="margin-top:16px;padding:12px 22px;border:none;border-radius:12px;background:#0C7C3D;color:#fff;font-family:Manrope;font-weight:800;font-size:14px;cursor:pointer">Ir a armar equipos</button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ---------- HISTORIAL ---------- -->
+      <sc-if value="{{ isHist }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="display:flex;gap:9px;margin:2px 0 12px">
+            <div style="flex:1;background:#fff;border:1px solid #E7ECE6;border-radius:16px;padding:12px 14px">
+              <div style="font-size:11px;font-weight:700;color:#9AA39B;text-transform:uppercase;letter-spacing:.5px">Partidos</div>
+              <div style="font-family:'Space Grotesk';font-weight:700;font-size:22px;color:#10160F">{{ totalMatches }}</div>
+            </div>
+            <div style="flex:1;background:#fff;border:1px solid #E7ECE6;border-radius:16px;padding:12px 14px">
+              <div style="font-size:11px;font-weight:700;color:#9AA39B;text-transform:uppercase;letter-spacing:.5px">Puntos extra</div>
+              <div style="font-family:'Space Grotesk';font-weight:700;font-size:22px;color:#12A150">{{ totalExtra }}</div>
+            </div>
+          </div>
+          <button onClick="{{ openExtra }}" style="width:100%;padding:12px;border:1.5px dashed #C4D2C4;border-radius:14px;background:#fff;color:#0C7C3D;font-family:Manrope;font-weight:800;font-size:13.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px" style-hover="background:#F4F6F3">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Agregar punto extra
+          </button>
+          <div style="font-size:14px;font-weight:800;color:#10160F;margin:2px 2px 9px">Historial de movimientos</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ history }}" as="h" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #E7ECE6;border-radius:16px;padding:12px 13px">
+                <span style="width:38px;height:38px;flex:0 0 auto;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px" style="{{ h.iconStyle }}">{{ h.icon }}</span>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13.5px;font-weight:700;color:#10160F;line-height:1.3">{{ h.title }}</div>
+                  <div style="font-size:11.5px;color:#9AA39B;font-weight:600;margin-top:2px">{{ h.sub }}</div>
+                </div>
+                <span style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:#12A150;font-variant-numeric:tabular-nums">{{ h.delta }}</span>
+                <button onClick="{{ h.onRemove }}" style="width:26px;height:26px;flex:0 0 auto;border:none;border-radius:8px;background:#F4F6F3;color:#B0433A;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:#FBE7E5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- ===================== BOTTOM NAV ===================== -->
+    <div style="flex:0 0 auto;display:flex;background:#fff;border-top:1px solid #E7ECE6;padding:9px 8px 24px">
+      <button onClick="{{ goTabla }}" style="flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:Manrope;font-weight:700;font-size:10.5px" style="{{ navTabla }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21V9m4 12V4m4 17v-7"/><line x1="3" y1="21" x2="21" y2="21"/></svg>
+        Tabla
+      </button>
+      <button onClick="{{ goArmar }}" style="flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:Manrope;font-weight:700;font-size:10.5px" style="{{ navArmar }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+        Armar
+      </button>
+      <button onClick="{{ goReg }}" style="flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:Manrope;font-weight:700;font-size:10.5px" style="{{ navReg }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8m-4-4h8"/></svg>
+        Registrar
+      </button>
+      <button onClick="{{ goHist }}" style="flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:Manrope;font-weight:700;font-size:10.5px" style="{{ navHist }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        Historial
+      </button>
+    </div>
+
+    <!-- ===================== EXTRA MODAL ===================== -->
+    <sc-if value="{{ showExtra }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;z-index:50;background:rgba(16,22,15,.5);display:flex;flex-direction:column;justify-content:flex-end" onClick="{{ closeModal }}">
+        <div onClick="{{ stop }}" style="background:#F4F6F3;border-radius:28px 28px 0 0;padding:20px 20px 30px;animation:flu-sheet .3s cubic-bezier(.2,.8,.2,1) both">
+          <div style="width:40px;height:4px;background:#D6DCD4;border-radius:99px;margin:0 auto 16px"></div>
+          <div style="font-family:'Space Grotesk';font-size:19px;font-weight:700;color:#10160F">Sumar punto extra</div>
+          <div style="font-size:12.5px;color:#5A635A;margin-top:2px">Queda registrado a tu nombre en el historial.</div>
+
+          <div style="font-size:12px;font-weight:800;color:#9AA39B;text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px">Jugador</div>
+          <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin:0 -20px;padding-left:20px;padding-right:20px">
+            <sc-for list="{{ extraPlayers }}" as="p" hint-placeholder-count="6">
+              <button onClick="{{ p.onPick }}" style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 6px;border-radius:14px;background:none;border:none;cursor:pointer;font-family:Manrope;width:62px" style="{{ p.wrapStyle }}">
+                <span style="width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px" style="{{ p.avatarStyle }}">{{ p.initial }}</span>
+                <span style="font-size:11px;font-weight:700;color:#10160F;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</span>
+              </button>
+            </sc-for>
+          </div>
+
+          <div style="font-size:12px;font-weight:800;color:#9AA39B;text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px">Motivo</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ reasons }}" as="r" hint-placeholder-count="4">
+              <button onClick="{{ r.onPick }}" style="display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:14px;cursor:pointer;font-family:Manrope;text-align:left" style="{{ r.style }}">
+                <span style="font-size:18px">{{ r.icon }}</span>
+                <span style="flex:1;font-size:14px;font-weight:700;color:#10160F">{{ r.label }}</span>
+                <span style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:#12A150">+{{ r.pts }}</span>
+              </button>
+            </sc-for>
+          </div>
+
+          <button onClick="{{ confirmExtra }}" style="width:100%;margin-top:18px;padding:15px;border:none;border-radius:14px;font-family:Manrope;font-weight:800;font-size:15px;cursor:pointer" style="{{ styExtraConfirm }}">{{ extraConfirmLabel }}</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===================== SHARE MODAL ===================== -->
+    <sc-if value="{{ showShare }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;z-index:50;background:rgba(16,22,15,.5);display:flex;flex-direction:column;justify-content:flex-end" onClick="{{ closeModal }}">
+        <div onClick="{{ stop }}" style="background:#F4F6F3;border-radius:28px 28px 0 0;padding:20px 20px 30px;animation:flu-sheet .3s cubic-bezier(.2,.8,.2,1) both">
+          <div style="width:40px;height:4px;background:#D6DCD4;border-radius:99px;margin:0 auto 16px"></div>
+          <div style="font-family:'Space Grotesk';font-size:19px;font-weight:700;color:#10160F">Compartir en el grupo</div>
+          <div style="background:#fff;border:1px solid #E7ECE6;border-radius:16px;padding:15px;margin-top:14px;font-size:13px;line-height:1.55;color:#10160F;white-space:pre-wrap;font-family:Manrope">{{ shareMsg }}</div>
+          <div style="display:flex;gap:9px;margin-top:14px">
+            <button onClick="{{ copyShare }}" style="flex:0 0 auto;padding:14px 18px;border:1px solid #E7ECE6;border-radius:14px;background:#fff;color:#10160F;font-family:Manrope;font-weight:700;font-size:14px;cursor:pointer">Copiar</button>
+            <button onClick="{{ copyShare }}" style="flex:1;padding:14px;border:none;border-radius:14px;background:#12A150;color:#fff;font-family:Manrope;font-weight:800;font-size:14.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:#0f8f46">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.13c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.36c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24Z"/></svg>
+              WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===================== TOAST ===================== -->
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;left:50%;bottom:96px;z-index:60;transform:translateX(-50%);background:#10160F;color:#fff;padding:11px 18px;border-radius:999px;font-size:13.5px;font-weight:700;box-shadow:0 10px 24px -8px rgba(0,0,0,.5);animation:flu-toast 2.4s ease both;white-space:nowrap">{{ toast }}</div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:452,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'onboarding',
+    tab: 'tabla',
+    user: null,
+    builderInput: 'Lunes 20hs\n1 nachoo\n2juanma\n3 Martin\n4 juani\n5 Fede\n6 Santi\n7 mauro\n8 mateo\n9 chiva\n10 Vale',
+    whites: [], blacks: [], selected: null,
+    regWinner: null,
+    modal: null,           // 'extra' | 'share'
+    mPlayer: null, mReason: null,
+    toast: null,
+    players: [
+      { name:'Nacho', pj:22, g:15, e:3, extra:6 },
+      { name:'Juanma', pj:24, g:14, e:4, extra:4 },
+      { name:'Santi', pj:20, g:13, e:2, extra:5 },
+      { name:'Mateo', pj:23, g:12, e:5, extra:3 },
+      { name:'Fede', pj:21, g:12, e:3, extra:2 },
+      { name:'Martin', pj:19, g:11, e:4, extra:3 },
+      { name:'Chiva', pj:22, g:11, e:2, extra:2 },
+      { name:'Mauro', pj:18, g:10, e:3, extra:1 },
+      { name:'Vale', pj:20, g:9, e:4, extra:3 },
+      { name:'Juani', pj:17, g:9, e:2, extra:2 },
+      { name:'Franco', pj:16, g:8, e:3, extra:1 },
+      { name:'Joa', pj:15, g:7, e:3, extra:2 },
+      { name:'Mati', pj:14, g:6, e:4, extra:1 },
+      { name:'Lea', pj:13, g:6, e:2, extra:0 },
+      { name:'Joaquín', pj:12, g:5, e:2, extra:1 },
+    ],
+    history: [
+      { id:1, kind:'extra', by:'Santi', player:'Nacho', reason:'Gol de cabeza', delta:1, date:'30/06' },
+      { id:2, kind:'result', team:'Blancos', players:['Nacho','Mateo','Fede','Mauro','Vale'], delta:3, date:'30/06' },
+      { id:3, kind:'extra', by:'Mateo', player:'Juanma', reason:'Gol de mitad de cancha', delta:1, date:'23/06' },
+      { id:4, kind:'extra', by:'Nacho', player:'Santi', reason:'5+ goles en un partido', delta:1, date:'23/06' },
+      { id:5, kind:'result', team:'Negros', players:['Juanma','Santi','Martin','Chiva','Juani'], delta:3, date:'23/06' },
+      { id:6, kind:'extra', by:'Fede', player:'Martin', reason:'3 partidos invicto', delta:1, date:'16/06' },
+      { id:7, kind:'draw', players:[], delta:1, date:'16/06' },
+    ],
+    nextId: 100,
+  };
+
+  reasons = [
+    { id:'cabeza', label:'Gol de cabeza', icon:'🎯', pts:1 },
+    { id:'lejos', label:'Gol de atrás de mitad de cancha', icon:'🚀', pts:1 },
+    { id:'cinco', label:'5+ goles en un partido', icon:'🔥', pts:1 },
+    { id:'invicto', label:'3 partidos invicto', icon:'🛡️', pts:1 },
+  ];
+
+  insights = [
+    { tag:'Dupla letal', title:'Nacho + Juanma', desc:'Cuando juegan en el mismo equipo ganan 8 de 9 (89%).' },
+    { tag:'En racha', title:'Santi + Mateo', desc:'6 victorias al hilo jugando juntos este trimestre.' },
+    { tag:'Dependencia', title:'Chiva sin Nacho', desc:'Pierde el 60% de los partidos cuando no comparten equipo.' },
+    { tag:'Cerca', title:'Fede', desc:'A 1 partido de sumar el punto por 3 invicto.' },
+  ];
+
+  componentDidMount() { this.doParse(); }
+
+  pts(p){ return p.g*3 + p.e + p.extra; }
+  initial(n){ return (n||'?').trim().charAt(0).toUpperCase(); }
+  today(){ return '01/07'; }
+  toast(msg){ this.setState({toast:null}); setTimeout(()=>this.setState({toast:msg}),20); setTimeout(()=>this.setState(s=>s.toast===msg?{toast:null}:{}),2500); }
+  sorted(){ return [...this.state.players].sort((a,b)=>this.pts(b)-this.pts(a)); }
+
+  // ---- onboarding ----
+  pick(name){ this.setState({user:name, screen:'app', tab:'tabla'}); }
+
+  // ---- nav ----
+  go(tab){ this.setState({tab}); }
+
+  // ---- builder ----
+  norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,''); }
+  parseNames(input){
+    const out=[]; const skip=/^(lunes|equipos|partido|blancos|negros|domingo|hs)$/;
+    (input||'').split('\n').forEach(line=>{
+      let t=line.trim(); if(!t) return;
+      const hadNum=/^\s*\d+/.test(t);
+      t=t.replace(/^\s*\d+\s*[\.\)\-:]?\s*/,'').trim();
+      if(!t) return;
+      const n=this.norm(t);
+      if(!n) return;
+      if(!hadNum && (skip.test(n) || /\d/.test(line) || n.length<3 && !hadNum)) return;
+      if(skip.test(n)) return;
+      out.push(t);
+    });
+    return out;
+  }
+  resolve(raw){
+    const n=this.norm(raw);
+    let match=null;
+    for(const p of this.state.players){
+      const pn=this.norm(p.name);
+      if(pn===n || pn.startsWith(n.slice(0,Math.max(3,pn.length))) || n.startsWith(pn)){ match=p; break; }
+    }
+    if(match) return { name:match.name, pts:this.pts(match), known:true };
+    const nice=raw.trim().charAt(0).toUpperCase()+raw.trim().slice(1).toLowerCase();
+    return { name:nice, pts:0, known:false };
+  }
+  snake(list, jitter){
+    const arr=[...list].sort((a,b)=> (b.pts + (jitter?Math.random()*1.4:0)) - (a.pts + (jitter?Math.random()*1.4:0)));
+    const w=[], b=[];
+    arr.forEach((p,i)=>{
+      const pair=Math.floor(i/2), aFirst=(i%2===0);
+      const toW = (pair%2===0)? aFirst : !aFirst;
+      (toW?w:b).push(p);
+    });
+    return {w,b};
+  }
+  doParse(jitter){
+    const names=this.parseNames(this.state.builderInput).slice(0,10);
+    const players=names.map(n=>this.resolve(n));
+    const {w,b}=this.snake(players, jitter);
+    this.setState({whites:w, blacks:b, selected:null, regWinner:null});
+  }
+  onInput(e){ this.setState({builderInput:e.target.value}); }
+  tapPlayer(team, idx){
+    const sel=this.state.selected;
+    if(!sel){ this.setState({selected:{team,idx}}); return; }
+    if(sel.team===team){ this.setState({selected:{team,idx}}); return; }
+    // swap across teams
+    const w=[...this.state.whites], b=[...this.state.blacks];
+    if(sel.team==='w'){ const tmp=w[sel.idx]; w[sel.idx]=b[idx]; b[idx]=tmp; }
+    else { const tmp=b[sel.idx]; b[sel.idx]=w[idx]; w[idx]=tmp; }
+    this.setState({whites:w, blacks:b, selected:null});
+  }
+
+  // ---- register ----
+  setWinner(w){ this.setState({regWinner:w}); }
+  confirmResult(){
+    const w=this.state.regWinner; if(!w) return;
+    const players=[...this.state.players];
+    const bump=(names,g,e)=>names.forEach(nm=>{ const p=players.find(x=>x.name===nm); if(p){ p.pj+=1; p.g+=g; p.e+=e; } });
+    let entry;
+    if(w==='empate'){
+      const all=[...this.state.whites,...this.state.blacks].map(p=>p.name);
+      bump(all,0,1);
+      entry={ id:this.state.nextId, kind:'draw', players:all, delta:1, date:this.today() };
+    } else {
+      const team=w==='blancos'?this.state.whites:this.state.blacks;
+      const names=team.map(p=>p.name).filter(Boolean);
+      bump(names,1,0);
+      entry={ id:this.state.nextId, kind:'result', team:w==='blancos'?'Blancos':'Negros', players:names, delta:3, date:this.today() };
+    }
+    this.setState({players, history:[entry,...this.state.history], nextId:this.state.nextId+1, regWinner:null});
+    this.toast(w==='empate'?'Empate registrado · +1 a todos':'Resultado guardado ✓');
+  }
+
+  // ---- extra points ----
+  openExtra(){ this.setState({modal:'extra', mPlayer:null, mReason:null}); }
+  closeModal(){ this.setState({modal:null}); }
+  confirmExtra(){
+    const { mPlayer, mReason }=this.state; if(!mPlayer||!mReason) return;
+    const r=this.reasons.find(x=>x.id===mReason);
+    const players=this.state.players.map(p=> p.name===mPlayer? {...p, extra:p.extra+r.pts}:p);
+    const entry={ id:this.state.nextId, kind:'extra', by:this.state.user||'Vos', player:mPlayer, reason:r.label, delta:r.pts, date:this.today() };
+    this.setState({players, history:[entry,...this.state.history], nextId:this.state.nextId+1, modal:null});
+    this.toast('+'+r.pts+' a '+mPlayer+' ✓');
+  }
+  removeHistory(id){
+    const h=this.state.history.find(x=>x.id===id); if(!h) return;
+    const players=[...this.state.players];
+    if(h.kind==='extra'){ const p=players.find(x=>x.name===h.player); if(p) p.extra=Math.max(0,p.extra-h.delta); }
+    else if(h.kind==='result'){ h.players.forEach(nm=>{ const p=players.find(x=>x.name===nm); if(p){ p.g=Math.max(0,p.g-1); p.pj=Math.max(0,p.pj-1);} }); }
+    else if(h.kind==='draw'){ h.players.forEach(nm=>{ const p=players.find(x=>x.name===nm); if(p){ p.e=Math.max(0,p.e-1); p.pj=Math.max(0,p.pj-1);} }); }
+    this.setState({players, history:this.state.history.filter(x=>x.id!==id)});
+    this.toast('Movimiento eliminado');
+  }
+
+  // ---- share ----
+  openShare(){ this.setState({modal:'share'}); }
+  shareMsg(){
+    const w=this.state.whites, b=this.state.blacks;
+    const lead=this.sorted()[0];
+    const line=(arr)=>arr.map((p,i)=>(i+1)+'. '+(p?p.name:'—')).join('\n');
+    let msg='⚽ Equipos del partido — Lunes 20hs\n\n';
+    msg+='⚪ Blancos:\n'+line(w)+'\n\n';
+    msg+='⚫ Negros:\n'+line(b)+'\n\n';
+    if(lead) msg+=lead.name+' está puntero con '+this.pts(lead)+' puntos 🏆\n';
+    msg+='Mirá tus puntos en la app 👉 futboldeloslunes.vercel.app';
+    return msg;
+  }
+  copyShare(){
+    try{ navigator.clipboard && navigator.clipboard.writeText(this.shareMsg()); }catch(e){}
+    this.setState({modal:null});
+    this.toast('Mensaje copiado ✓');
+  }
+
+  renderVals(){
+    const tab=this.state.tab;
+    const titles={ tabla:['Posiciones','Fútbol de los lunes'], armar:['Armador','Equipos del lunes'], registrar:['Resultado','Cargar partido'], historial:['Historial','Movimientos'] };
+    const th=titles[tab]||titles.tabla;
+    const s=this.sorted();
+    const me=this.state.user;
+    const medals=['🥇','🥈','🥉'];
+
+    const podium=s.slice(0,3).map((p,i)=>({
+      name:p.name, initial:this.initial(p.name), pts:this.pts(p), medal:medals[i],
+      avatarStyle: i===0? 'width:56px;height:56px;font-size:22px' : 'width:46px;height:46px;font-size:18px',
+    }));
+
+    const standings=s.map((p,i)=>{
+      const isMe=p.name===me;
+      return {
+        rank:i+1, name:p.name, initial:this.initial(p.name), pj:p.pj, pts:this.pts(p),
+        record:'G'+p.g+' · E'+p.e+' · P'+(p.pj-p.g-p.e),
+        youTag: isMe? '  · vos' : '',
+        rowStyle: isMe? 'background:#F1FAF3' : '',
+        rankStyle: i<3? 'color:#0C7C3D' : '',
+        avatarStyle: isMe? 'background:#0C7C3D;color:#fff' : '',
+      };
+    });
+
+    // builder views
+    const selStyle=(team,idx)=>{ const sel=this.state.selected; return (sel&&sel.team===team&&sel.idx===idx)? (team==='w'?'background:#E9F7EE;box-shadow:inset 0 0 0 2px #12A150':'background:rgba(143,224,172,.18);box-shadow:inset 0 0 0 2px #8FE0AC') : ''; };
+    const whitesView=this.state.whites.map((p,i)=>({ num:i+1, name:p?p.name:'—', pts:p?p.pts:0, onTap:()=>this.tapPlayer('w',i), style:selStyle('w',i) }));
+    const blacksView=this.state.blacks.map((p,i)=>({ num:i+1, name:p?p.name:'—', pts:p?p.pts:0, onTap:()=>this.tapPlayer('b',i), style:selStyle('b',i) }));
+    const wpts=this.state.whites.reduce((a,p)=>a+(p?p.pts:0),0);
+    const bpts=this.state.blacks.reduce((a,p)=>a+(p?p.pts:0),0);
+    const teamsReady=this.state.whites.length>0;
+
+    // register
+    const rw=this.state.regWinner;
+    const winBtn=(active,dark)=> active
+      ? (dark?'background:#17201A;color:#fff;border:2px solid #17201A':'background:#0C7C3D;color:#fff;border:2px solid #0C7C3D')
+      : 'background:#fff;color:#10160F;border:2px solid #E7ECE6';
+    let regSummary='', regDetail='';
+    if(rw==='empate'){ regSummary='Empate'; regDetail='+1 punto para los 10 jugadores.'; }
+    else if(rw){ const team=rw==='blancos'?this.state.whites:this.state.blacks; regSummary=(rw==='blancos'?'Ganan Blancos':'Ganan Negros'); regDetail='+3 pts y +1 partido para: '+team.map(p=>p.name).join(', ')+'.'; }
+
+    // extra modal
+    const extraPlayers=s.map(p=>({ name:p.name, initial:this.initial(p.name), onPick:()=>this.setState({mPlayer:p.name}),
+      wrapStyle: this.state.mPlayer===p.name?'background:#E9F7EE':'',
+      avatarStyle: this.state.mPlayer===p.name?'background:#0C7C3D;color:#fff':'background:#EEF3EC;color:#0C7C3D' }));
+    const reasons=this.reasons.map(r=>({ ...r, onPick:()=>this.setState({mReason:r.id}),
+      style: this.state.mReason===r.id?'background:#E9F7EE;border:2px solid #12A150':'background:#fff;border:2px solid #E7ECE6' }));
+    const extraOk=this.state.mPlayer&&this.state.mReason;
+
+    // history view
+    const hIcon={ extra:'⭐', result:'🏆', draw:'🤝' };
+    const hStyle={ extra:'background:#FFF6E0', result:'background:#E9F7EE', draw:'background:#EEF1F4' };
+    const history=this.state.history.map(h=>{
+      let title,sub;
+      if(h.kind==='extra'){ title=h.by+' sumó a '+h.player; sub=h.reason+' · '+h.date; }
+      else if(h.kind==='result'){ title='Ganó '+h.team; sub='+3 a '+h.players.length+' jugadores · '+h.date; }
+      else { title='Empate'; sub='+1 a todos · '+h.date; }
+      return { title, sub, delta:'+'+h.delta, icon:hIcon[h.kind], iconStyle:hStyle[h.kind], onRemove:()=>this.removeHistory(h.id) };
+    });
+    const totalMatches=this.state.history.filter(h=>h.kind!=='extra').length + 34;
+    const totalExtra=this.state.players.reduce((a,p)=>a+p.extra,0);
+
+    const navStyle=(t)=> tab===t? 'color:#0C7C3D' : 'color:#AEB6AD';
+
+    return {
+      showOnboarding: this.state.screen!=='app',
+      roster: [...this.state.players].sort((a,b)=>a.name.localeCompare(b.name)).map(p=>({ name:p.name, initial:this.initial(p.name), onPick:()=>this.pick(p.name) })),
+      headerKicker: th[0], headerTitle: th[1],
+      userName: me||'—', userInitial: this.initial(me),
+      isTabla: tab==='tabla', isArmar: tab==='armar', isReg: tab==='registrar', isHist: tab==='historial',
+      goTabla:()=>this.go('tabla'), goArmar:()=>this.go('armar'), goReg:()=>this.go('registrar'), goHist:()=>this.go('historial'),
+      navTabla:navStyle('tabla'), navArmar:navStyle('armar'), navReg:navStyle('registrar'), navHist:navStyle('historial'),
+      podium, standings, insights:this.insights,
+      // builder
+      builderInput:this.state.builderInput, onInput:(e)=>this.onInput(e),
+      onParse:()=>this.doParse(false), onShuffle:()=>this.doParse(true), onShare:()=>this.openShare(),
+      whitesView, blacksView, whitesPts:wpts+' pts', blacksPts:bpts+' pts',
+      teamDiff:Math.abs(wpts-bpts), teamsReady, noTeams:!teamsReady,
+      // register
+      hasWinner:!!rw, regSummary, regDetail,
+      setWinBlancos:()=>this.setWinner('blancos'), setWinNegros:()=>this.setWinner('negros'), setWinEmpate:()=>this.setWinner('empate'),
+      styBlancos:winBtn(rw==='blancos',false), styNegros:winBtn(rw==='negros',true),
+      styEmpate: rw==='empate'?'background:#0C7C3D;color:#fff;border:2px solid #0C7C3D':'background:#fff;color:#10160F;border:2px solid #E7ECE6',
+      styConfirm: rw? 'background:#12A150;color:#fff' : 'background:#D6DCD4;color:#fff;cursor:not-allowed',
+      onConfirmResult:()=>this.confirmResult(),
+      // extra
+      openExtra:()=>this.openExtra(), closeModal:()=>this.closeModal(), stop:(e)=>e.stopPropagation(),
+      showExtra:this.state.modal==='extra', showShare:this.state.modal==='share',
+      extraPlayers, reasons, confirmExtra:()=>this.confirmExtra(),
+      styExtraConfirm: extraOk?'background:#12A150;color:#fff':'background:#D6DCD4;color:#fff;cursor:not-allowed',
+      extraConfirmLabel: extraOk? ('Sumar +1 a '+this.state.mPlayer) : 'Elegí jugador y motivo',
+      // history
+      history, totalMatches, totalExtra,
+      // share
+      shareMsg:this.shareMsg(), copyShare:()=>this.copyShare(),
+      toast:this.state.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>
