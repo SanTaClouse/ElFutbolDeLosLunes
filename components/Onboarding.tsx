@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useApp } from "./store";
 import { BallLogo, IconPlus } from "./Icons";
 import { initial } from "@/lib/format";
+import Image from "next/image";
 
 export function Onboarding() {
   const { players, pick, createAndPick } = useApp();
@@ -24,14 +25,15 @@ export function Onboarding() {
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-brand via-brand2 to-brand3 px-7 pb-8 pt-16 text-white">
       <div className="flex-shrink-0 animate-up text-center">
-        <div className="mx-auto mb-[22px] flex h-24 w-24 items-center justify-center rounded-[28px] border border-white/20 bg-white/10 backdrop-blur">
-          <BallLogo size={56} />
-        </div>
-        <div className="font-display text-[15px] font-semibold uppercase tracking-[3px] text-lightgreen">
-          Fútbol de los
-        </div>
-        <div className="mt-0.5 font-display text-[52px] font-bold leading-[.95]">
-          Lunes
+        <div className="mx-auto mb-[22px] flex items-center justify-center">
+          <Image
+            src="/logo-on-green.svg"
+            alt="Logo"
+            width={220}
+            height={220}
+            className="object-contain"
+            priority
+          />
         </div>
         <div className="mt-3.5 text-[15px] font-medium text-white/70">
           Elegí tu nombre para entrar

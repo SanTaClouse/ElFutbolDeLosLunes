@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="300" viewBox="0 0 360 300" fill="none">
+  <defs>
+    <style>
+      .kicker {
+        font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+        font-weight: 600;
+        font-size: 17px;
+        letter-spacing: 3px;
+        fill: #12A150;
+      }
+      .word {
+        font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+        font-weight: 700;
+        font-size: 64px;
+        letter-spacing: 1px;
+        fill: #10160F;
+      }
+    </style>
+  </defs>
+
+  <g transform="translate(154,20) scale(1.25)" stroke="#12A150" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="24" cy="24" r="21"></circle>
+    <polygon points="24,15 32.56,21.22 29.29,31.28 18.71,31.28 15.44,21.22" fill="#12A150"></polygon>
+    <path d="M24,15 L24,3 M32.56,21.22 L43.97,17.51 M29.29,31.28 L36.34,40.99 M18.71,31.28 L11.66,40.99 M15.44,21.22 L4.03,17.51"></path>
+  </g>
+  <text x="180" y="118" text-anchor="middle" class="kicker">EL FÚTBOL DE LOS</text>
+  <text x="180" y="222" text-anchor="middle" class="word">LUNES</text>
+  <rect x="140" y="244" width="80" height="7" rx="3.5" fill="#12A150"></rect>
+</svg>
