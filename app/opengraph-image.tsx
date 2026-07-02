@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 
+export const runtime = "edge";
 export const alt = "Fútbol de los Lunes";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -7,7 +8,7 @@ export const contentType = "image/png";
 const BALL = `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 48 48" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="21"/><polygon points="24,15 32.56,21.22 29.29,31.28 18.71,31.28 15.44,21.22" fill="#ffffff"/><path d="M24,15 L24,3 M32.56,21.22 L43.97,17.51 M29.29,31.28 L36.34,40.99 M18.71,31.28 L11.66,40.99 M15.44,21.22 L4.03,17.51"/></svg>`;
 
 export default function OpengraphImage() {
-  const ball = `data:image/svg+xml;base64,${Buffer.from(BALL).toString("base64")}`;
+  const ball = `data:image/svg+xml;base64,${btoa(BALL)}`;
 
   return new ImageResponse(
     (
