@@ -16,10 +16,27 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://futboldeloslunes.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Fútbol de los Lunes",
-  description: "Tabla de posiciones, armador de equipos y puntos del grupo.",
-  manifest: undefined,
+  description:
+    "Tabla de posiciones, armador de equipos parejos y puntos del grupo.",
+  openGraph: {
+    title: "Fútbol de los Lunes",
+    description:
+      "Mirá la tabla, armá equipos parejos y seguí tus puntos del grupo.",
+    type: "website",
+    locale: "es_AR",
+    siteName: "Fútbol de los Lunes",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Fútbol de los Lunes",
+    description: "Mirá la tabla, armá equipos parejos y seguí tus puntos.",
+  },
 };
 
 export const viewport: Viewport = {

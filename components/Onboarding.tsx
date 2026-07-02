@@ -10,7 +10,6 @@ export function Onboarding() {
   const { players, pick, createAndPick } = useApp();
   const roster = [...players].sort((a, b) => a.name.localeCompare(b.name));
 
-  const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -86,47 +85,34 @@ export function Onboarding() {
         </div>
 
         <div className="flex-shrink-0 pt-4">
-          {adding ? (
-            <div className="animate-up">
-              <div className="flex gap-2">
-                <input
-                  autoFocus
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && submit()}
-                  placeholder="Tu nombre…"
-                  maxLength={20}
-                  className="flex-1 rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-[15px] font-semibold text-white outline-none backdrop-blur-sm placeholder:text-white/50 focus:border-white/50"
-                />
-                <button
-                  onClick={submit}
-                  disabled={!name.trim() || busy}
-                  className="rounded-2xl bg-white px-5 py-3 text-[15px] font-extrabold text-brand2 transition active:scale-95 disabled:opacity-50"
-                >
-                  Entrar
-                </button>
-              </div>
-              <button
-                onClick={() => setAdding(false)}
-                className="mt-2 w-full text-center text-[12.5px] font-semibold text-white/50"
-              >
-                Cancelar
-              </button>
-            </div>
-          ) : (
-            <>
-              <button
-                onClick={() => setAdding(true)}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-white/30 bg-white/[.06] py-3 text-[14px] font-bold text-white transition hover:bg-white/10 active:scale-[.98]"
-              >
-                <IconPlus size={16} />
-                Mi nombre no está
-              </button>
-              <div className="mt-3 text-center text-[12px] text-white/45">
-                Tu nombre es tu acceso · sin contraseñas
-              </div>
-            </>
-          )}
+          <div className="mb-2 flex items-center justify-center gap-1.5 text-[12.5px] font-semibold text-white/55">
+            <IconPlus size={14} />
+            ¿No estás en la lista? Sumate
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submit()}
+              placeholder="Escribí tu nombre…"
+              maxLength={20}
+              autoComplete="off"
+              autoCapitalize="words"
+              enterKeyHint="go"
+              className="flex-1 rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-[15px] font-semibold text-white outline-none backdrop-blur-sm placeholder:text-white/50 focus:border-white/50"
+            />
+            <button
+              onClick={submit}
+              disabled={!name.trim() || busy}
+              className="rounded-2xl bg-white px-5 py-3 text-[15px] font-extrabold text-brand2 transition active:scale-95 disabled:opacity-50"
+            >
+              Entrar
+            </button>
+          </div>
+          <div className="mt-3 text-center text-[12px] text-white/45">
+            Tu nombre es tu acceso · sin contraseñas
+          </div>
         </div>
       </div>
     </div>

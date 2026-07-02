@@ -1,10 +1,12 @@
 import { GameEvent, Player } from "../types";
+import { SharedTeams } from "../share";
 import { todayISO } from "../format";
 import {
   AddExtraInput,
   AddResultInput,
   Repo,
   newId,
+  shortCode,
 } from "./repo";
 import { seedEvents, seedPlayers } from "./seed";
 
@@ -13,6 +15,7 @@ const STORAGE_KEY = "flu:data:v1";
 interface Store {
   players: Player[];
   events: GameEvent[];
+  shares: Record<string, SharedTeams>;
 }
 
 /**
@@ -30,7 +33,14 @@ export class MockRepo implements Repo {
     if (typeof window !== "undefined") {
       try {
         const raw = window.localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw) as Store;
+        if (raw) {
+          const parsed = JSON.parse(raw) as Partial<Store>;
+          return {
+            players: parsed.players ?? [],
+            events: parsed.events ?? [],
+            shares: parsed.shares ?? {},
+          };
+        }
       } catch {
         /* ignora storage corrupto */
       }
@@ -40,8 +50,8 @@ export class MockRepo implements Repo {
     // mostrar data falsa. Lo real vive en Supabase.
     const isDev = process.env.NODE_ENV === "development";
     const seeded: Store = isDev
-      ? { players: seedPlayers, events: seedEvents() }
-      : { players: [], events: [] };
+      ? { players: seedPlayers, events: seedEvents(), shares: {} }
+      : { players: [], events: [], shares: {} };
     this.persist(seeded);
     return seeded;
   }
@@ -124,5 +134,16 @@ export class MockRepo implements Repo {
         : e
     );
     this.save();
+  }
+
+  async createShare(teams: SharedTeams): Promise<string> {
+    const code = shortCode();
+    this.store.shares[code] = teams;
+    this.save();
+    return code;
+  }
+
+  async getShare(code: string): Promise<SharedTeams | null> {
+    return this.store.shares[code] ?? null;
   }
 }

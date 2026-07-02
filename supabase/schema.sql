@@ -39,6 +39,17 @@ create table if not exists public.events (
 create index if not exists events_created_at_idx on public.events (created_at);
 create index if not exists events_type_idx on public.events (type);
 
+-- Equipos compartidos: guardan la mezcla de un partido bajo un código corto,
+-- así el link de WhatsApp queda cortito (…/?s=Ab3xK9) en vez de enorme.
+create table if not exists public.shares (
+  code       text primary key,
+  team_white text[] not null,
+  team_black text[] not null,
+  leader     text,
+  leader_pts integer,
+  created_at timestamptz not null default now()
+);
+
 -- ------------------------------------------------------------
 --  Row Level Security
 --  El acceso es sin cuenta (elegís tu nombre). Para un grupo de
@@ -47,6 +58,7 @@ create index if not exists events_type_idx on public.events (type);
 -- ------------------------------------------------------------
 alter table public.players enable row level security;
 alter table public.events enable row level security;
+alter table public.shares enable row level security;
 
 drop policy if exists "players open" on public.players;
 create policy "players open" on public.players
@@ -54,6 +66,10 @@ create policy "players open" on public.players
 
 drop policy if exists "events open" on public.events;
 create policy "events open" on public.events
+  for all using (true) with check (true);
+
+drop policy if exists "shares open" on public.shares;
+create policy "shares open" on public.shares
   for all using (true) with check (true);
 
 -- ------------------------------------------------------------

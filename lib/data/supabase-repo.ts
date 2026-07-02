@@ -1,7 +1,8 @@
 import { GameEvent, Player } from "../types";
+import { SharedTeams } from "../share";
 import { todayISO } from "../format";
 import { getSupabase } from "../supabase/client";
-import { AddExtraInput, AddResultInput, Repo } from "./repo";
+import { AddExtraInput, AddResultInput, Repo, shortCode } from "./repo";
 
 interface EventRow {
   id: string;
@@ -126,5 +127,45 @@ export class SupabaseRepo implements Repo {
       })
       .eq("id", id);
     if (error) throw error;
+  }
+
+  async createShare(teams: SharedTeams): Promise<string> {
+    const sb = getSupabase();
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const code = shortCode();
+      const { error } = await sb.from("shares").insert({
+        code,
+        team_white: teams.w,
+        team_black: teams.b,
+        leader: teams.l ?? null,
+        leader_pts: teams.lp ?? null,
+      });
+      if (!error) return code;
+      // 23505 = unique_violation -> reintenta con otro código
+      if ((error as { code?: string }).code !== "23505") throw error;
+    }
+    throw new Error("No se pudo generar un código de compartir.");
+  }
+
+  async getShare(code: string): Promise<SharedTeams | null> {
+    const { data, error } = await getSupabase()
+      .from("shares")
+      .select("team_white, team_black, leader, leader_pts")
+      .eq("code", code)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    const row = data as {
+      team_white: string[];
+      team_black: string[];
+      leader: string | null;
+      leader_pts: number | null;
+    };
+    return {
+      w: row.team_white,
+      b: row.team_black,
+      l: row.leader ?? undefined,
+      lp: row.leader_pts ?? undefined,
+    };
   }
 }

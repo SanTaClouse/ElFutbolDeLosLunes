@@ -1,4 +1,5 @@
 import { GameEvent, Player, TeamSide } from "../types";
+import { SharedTeams } from "../share";
 
 export interface AddResultInput {
   outcome: TeamSide | "Empate";
@@ -23,6 +24,26 @@ export interface Repo {
   addExtra(input: AddExtraInput): Promise<GameEvent>;
   /** Baja lógica: marca el evento como quitado y guarda quién lo hizo. */
   removeEvent(id: string, removedBy: string): Promise<void>;
+
+  /** Guarda una mezcla de equipos y devuelve un código corto para el link. */
+  createShare(teams: SharedTeams): Promise<string>;
+  /** Recupera los equipos compartidos por su código corto. */
+  getShare(code: string): Promise<SharedTeams | null>;
+}
+
+/** Código corto legible para el link compartido (sin caracteres ambiguos). */
+export function shortCode(len = 7): string {
+  const alphabet = "23456789abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+  let out = "";
+  const arr = new Uint32Array(len);
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    crypto.getRandomValues(arr);
+  }
+  for (let i = 0; i < len; i++) {
+    const n = arr[i] || Math.floor(Math.random() * 1e9);
+    out += alphabet[n % alphabet.length];
+  }
+  return out;
 }
 
 export function newId(prefix = "id"): string {

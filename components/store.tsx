@@ -22,6 +22,7 @@ import { computeInsights, Insight } from "@/lib/insights";
 import { parseRoster } from "@/lib/parse";
 import { balanceTeams, BuilderSlot, toSlot } from "@/lib/balance";
 import {
+  APP_URL,
   buildShareMessage,
   buildShareUrl,
   decodeTeams,
@@ -118,6 +119,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     null | "extra" | "share" | "profile" | "remember"
   >(null);
   const [sharedTeams, setSharedTeams] = useState<SharedTeams | null>(null);
+  const [shareUrl, setShareUrl] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const toastId = useRef(0);
 
@@ -147,8 +149,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
       if (typeof window !== "undefined") {
         const params = new URLSearchParams(window.location.search);
+        const s = params.get("s");
         const t = params.get("t");
-        if (t) {
+        if (s) {
+          try {
+            const sh = await getRepo().getShare(s);
+            if (sh) setSharedTeams(sh);
+          } catch {
+            /* código inválido o sin conexión */
+          }
+        } else if (t) {
           const decoded = decodeTeams(t);
           if (decoded) setSharedTeams(decoded);
         }
@@ -297,8 +307,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [outcome, whites, blacks, refresh, showToast]);
 
   const openExtra = useCallback(() => setModal("extra"), []);
-  const openShare = useCallback(() => setModal("share"), []);
   const closeModal = useCallback(() => setModal(null), []);
+
+  const openShare = useCallback(async () => {
+    setShareUrl(""); // vacío = "generando link…" en la hoja
+    setModal("share");
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : APP_URL;
+    const teams: SharedTeams = {
+      w: whites.map((s) => s.name),
+      b: blacks.map((s) => s.name),
+      l: leader?.player.name,
+      lp: leader?.pts,
+    };
+    try {
+      const code = await getRepo().createShare(teams);
+      setShareUrl(`${origin}/?s=${code}`);
+    } catch {
+      // fallback: link con los equipos codificados (más largo pero funciona)
+      setShareUrl(buildShareUrl(whites, blacks, leader, origin));
+    }
+  }, [whites, blacks, leader]);
 
   const confirmExtra = useCallback(
     async (playerId: string, reasonId: string) => {
@@ -337,10 +366,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const blacksPts = useMemo(
     () => blacks.reduce((a, s) => a + s.pts, 0),
     [blacks]
-  );
-  const shareUrl = useMemo(
-    () => buildShareUrl(whites, blacks, leader),
-    [whites, blacks, leader]
   );
   const shareMsg = useMemo(
     () => buildShareMessage(whites, blacks, leader, shareUrl),
