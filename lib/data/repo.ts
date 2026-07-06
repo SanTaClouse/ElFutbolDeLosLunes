@@ -15,6 +15,12 @@ export interface AddExtraInput {
   delta: number;
 }
 
+export interface AddLineupInput {
+  teamWhite: string[]; // player ids
+  teamBlack: string[]; // player ids
+  addedBy: string;
+}
+
 /** Contrato de persistencia. Lo cumplen el mock (localStorage) y Supabase. */
 export interface Repo {
   getPlayers(): Promise<Player[]>;
@@ -22,6 +28,8 @@ export interface Repo {
   addPlayer(name: string): Promise<Player>;
   addResult(input: AddResultInput): Promise<GameEvent>;
   addExtra(input: AddExtraInput): Promise<GameEvent>;
+  /** Confirma los equipos armados para que todo el grupo vea la misma formación. */
+  addLineup(input: AddLineupInput): Promise<GameEvent>;
   /** Baja lógica: marca el evento como quitado y guarda quién lo hizo. */
   removeEvent(id: string, removedBy: string): Promise<void>;
 

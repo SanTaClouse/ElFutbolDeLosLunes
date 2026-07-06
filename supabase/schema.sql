@@ -15,9 +15,10 @@ create table if not exists public.players (
 --   type = 'result' -> partido con ganador (guarda ambos equipos)
 --   type = 'draw'   -> empate (guarda ambos equipos)
 --   type = 'extra'  -> punto extra manual (jugador, motivo, autor)
+--   type = 'lineup' -> equipos confirmados para el próximo partido (no suma puntos)
 create table if not exists public.events (
   id           uuid primary key default gen_random_uuid(),
-  type         text not null check (type in ('result', 'draw', 'extra')),
+  type         text not null check (type in ('result', 'draw', 'extra', 'lineup')),
   occurred_on  date not null default current_date,
   -- result | draw
   team_white   uuid[],

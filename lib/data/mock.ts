@@ -3,6 +3,7 @@ import { SharedTeams } from "../share";
 import { todayISO } from "../format";
 import {
   AddExtraInput,
+  AddLineupInput,
   AddResultInput,
   Repo,
   newId,
@@ -71,10 +72,12 @@ export class MockRepo implements Repo {
   }
 
   async getPlayers(): Promise<Player[]> {
+    this.store = this.load(); // otra pestaña pudo haber escrito
     return [...this.store.players];
   }
 
   async getEvents(): Promise<GameEvent[]> {
+    this.store = this.load();
     return [...this.store.events];
   }
 
@@ -116,6 +119,21 @@ export class MockRepo implements Repo {
       reasonLabel: input.reasonLabel,
       addedBy: input.addedBy,
       delta: input.delta,
+    };
+    this.store.events.push(event);
+    this.save();
+    return event;
+  }
+
+  async addLineup(input: AddLineupInput): Promise<GameEvent> {
+    const event: GameEvent = {
+      id: newId("l"),
+      type: "lineup",
+      occurredOn: todayISO(),
+      createdAt: new Date().toISOString(),
+      teamWhite: input.teamWhite,
+      teamBlack: input.teamBlack,
+      addedBy: input.addedBy,
     };
     this.store.events.push(event);
     this.save();

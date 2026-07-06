@@ -19,4 +19,4 @@ export function getRepo(): Repo {
 export const usingSupabase = isSupabaseConfigured;
 
 export type { Repo } from "./repo";
-export type { AddResultInput, AddExtraInput } from "./repo";
+export type { AddResultInput, AddExtraInput, AddLineupInput } from "./repo";

@@ -1,8 +1,9 @@
 "use client";
 
 import { useApp } from "../store";
-import { IconShuffle, IconShare } from "../Icons";
+import { IconShuffle, IconShare, IconCheck } from "../Icons";
 import { BuilderSlot } from "@/lib/balance";
+import { shortDate } from "@/lib/format";
 
 export function ArmarTab() {
   const {
@@ -18,6 +19,9 @@ export function ArmarTab() {
     selected,
     tapPlayer,
     openShare,
+    currentLineup,
+    teamsEdited,
+    confirmLineup,
   } = useApp();
 
   return (
@@ -49,6 +53,29 @@ export function ArmarTab() {
 
       {teamsReady && (
         <div className="mt-4 animate-up">
+          {currentLineup && !teamsEdited && (
+            <div className="mb-3 rounded-2xl border border-softborder bg-softgreen px-[15px] py-3">
+              <div className="text-[13px] font-extrabold text-brand">
+                Equipos confirmados por {currentLineup.addedBy ?? "alguien"} ·{" "}
+                {shortDate(currentLineup.occurredOn)}
+              </div>
+              <div className="mt-[3px] text-[12px] text-[#3f7a55]">
+                Todo el grupo ve estos equipos. Si cambiás algo, volvé a
+                confirmar.
+              </div>
+            </div>
+          )}
+          {currentLineup && teamsEdited && (
+            <div className="mb-3 rounded-2xl border border-[#EAD9A8] bg-[#FFF6E0] px-[15px] py-3">
+              <div className="text-[13px] font-extrabold text-[#8a6d1a]">
+                Ojo: estás cambiando los equipos que confirmó{" "}
+                {currentLineup.addedBy ?? "alguien"}.
+              </div>
+              <div className="mt-[3px] text-[12px] text-[#8a6d1a]/80">
+                Tocá «Confirmar equipos» para guardar la nueva versión.
+              </div>
+            </div>
+          )}
           <div className="mb-2.5 text-center text-xs font-bold text-faint">
             Tocá un jugador de cada equipo para intercambiarlos
           </div>
@@ -75,8 +102,15 @@ export function ArmarTab() {
             más parejo posible
           </div>
           <button
-            onClick={openShare}
+            onClick={confirmLineup}
             className="mt-3 flex w-full items-center justify-center gap-[9px] rounded-2xl bg-primary py-3.5 text-[14.5px] font-extrabold text-white shadow-btn2 transition hover:bg-primary-dark"
+          >
+            <IconCheck size={18} />
+            {currentLineup ? "Confirmar de nuevo" : "Confirmar equipos"}
+          </button>
+          <button
+            onClick={openShare}
+            className="mt-2.5 flex w-full items-center justify-center gap-[9px] rounded-2xl border border-line bg-white py-3.5 text-[14.5px] font-extrabold text-ink transition hover:bg-appbg"
           >
             <IconShare size={18} />
             Compartir en el grupo

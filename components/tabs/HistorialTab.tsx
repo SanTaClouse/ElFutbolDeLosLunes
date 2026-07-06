@@ -5,11 +5,12 @@ import { IconPlus, IconMinus } from "../Icons";
 import { shortDate } from "@/lib/format";
 import { GameEvent } from "@/lib/types";
 
-const ICON = { extra: "⭐", result: "🏆", draw: "🤝" };
+const ICON = { extra: "⭐", result: "🏆", draw: "🤝", lineup: "📋" };
 const ICON_BG = {
   extra: "#FFF6E0",
   result: "#E9F7EE",
   draw: "#EEF1F4",
+  lineup: "#EDF3FA",
 };
 
 export function HistorialTab() {
@@ -23,7 +24,7 @@ export function HistorialTab() {
   );
 
   const totalMatches = events.filter(
-    (e) => e.type !== "extra" && !e.removed
+    (e) => (e.type === "result" || e.type === "draw") && !e.removed
   ).length;
   const totalExtra = events
     .filter((e) => e.type === "extra" && !e.removed)
@@ -38,6 +39,14 @@ export function HistorialTab() {
         sub: `${h.reasonLabel ?? "Punto extra"} · ${shortDate(h.occurredOn)}`,
         delta: h.delta ?? 1,
         members: null as string[] | null,
+      };
+    }
+    if (h.type === "lineup") {
+      return {
+        title: `${h.addedBy ?? "Alguien"} armó los equipos`,
+        sub: `Equipos confirmados · ${shortDate(h.occurredOn)}`,
+        delta: null as number | null,
+        members: [...names(h.teamWhite), ...names(h.teamBlack)],
       };
     }
     if (h.type === "result") {
@@ -119,13 +128,15 @@ export function HistorialTab() {
                     {d.sub}
                   </div>
                 </div>
-                <span
-                  className={`tabular font-display text-sm font-bold ${
-                    removed ? "text-faint line-through" : "text-primary"
-                  }`}
-                >
-                  +{d.delta}
-                </span>
+                {d.delta != null && (
+                  <span
+                    className={`tabular font-display text-sm font-bold ${
+                      removed ? "text-faint line-through" : "text-primary"
+                    }`}
+                  >
+                    +{d.delta}
+                  </span>
+                )}
                 {!removed && (
                   <button
                     onClick={() => removeEvent(h.id)}

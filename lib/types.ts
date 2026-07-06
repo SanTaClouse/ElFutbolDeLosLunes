@@ -6,7 +6,7 @@ export interface Player {
   name: string;
 }
 
-export type EventType = "result" | "draw" | "extra";
+export type EventType = "result" | "draw" | "extra" | "lineup";
 
 /**
  * Un evento es la unidad de verdad. La tabla de posiciones se reconstruye
@@ -16,6 +16,8 @@ export type EventType = "result" | "draw" | "extra";
  *   y el equipo ganador (para contar G).
  * - draw:   empate. Guarda ambos equipos; +1 a los 10.
  * - extra:  punto extra manual a un jugador, con motivo y autor (trazabilidad).
+ * - lineup: equipos confirmados para el próximo partido. No suma puntos; el
+ *   último no quitado (posterior al último partido) es la formación vigente.
  */
 export interface GameEvent {
   id: string;

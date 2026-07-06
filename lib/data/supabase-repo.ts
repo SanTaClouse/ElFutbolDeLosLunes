@@ -1,12 +1,18 @@
-import { GameEvent, Player } from "../types";
+import { EventType, GameEvent, Player } from "../types";
 import { SharedTeams } from "../share";
 import { todayISO } from "../format";
 import { getSupabase } from "../supabase/client";
-import { AddExtraInput, AddResultInput, Repo, shortCode } from "./repo";
+import {
+  AddExtraInput,
+  AddLineupInput,
+  AddResultInput,
+  Repo,
+  shortCode,
+} from "./repo";
 
 interface EventRow {
   id: string;
-  type: "result" | "draw" | "extra";
+  type: EventType;
   occurred_on: string;
   created_at: string;
   winner: "Blancos" | "Negros" | null;
@@ -110,6 +116,22 @@ export class SupabaseRepo implements Repo {
         reason_label: input.reasonLabel,
         added_by: input.addedBy,
         delta: input.delta,
+      })
+      .select("*")
+      .single();
+    if (error) throw error;
+    return rowToEvent(data as EventRow);
+  }
+
+  async addLineup(input: AddLineupInput): Promise<GameEvent> {
+    const { data, error } = await getSupabase()
+      .from("events")
+      .insert({
+        type: "lineup",
+        occurred_on: todayISO(),
+        team_white: input.teamWhite,
+        team_black: input.teamBlack,
+        added_by: input.addedBy,
       })
       .select("*")
       .single();

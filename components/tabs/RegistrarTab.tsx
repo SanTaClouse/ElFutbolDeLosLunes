@@ -13,6 +13,8 @@ export function RegistrarTab() {
     confirmResult,
     openExtra,
     go,
+    currentLineup,
+    teamsEdited,
   } = useApp();
 
   if (!teamsReady) {
@@ -61,6 +63,12 @@ export function RegistrarTab() {
       <div className="mx-0.5 mb-2.5 mt-0.5 text-[13px] font-semibold text-muted">
         ¿Quién ganó el partido de hoy?
       </div>
+      {currentLineup && !teamsEdited && (
+        <div className="mx-0.5 -mt-1 mb-2.5 text-[11.5px] font-semibold text-faint">
+          Se registra con los equipos que confirmó{" "}
+          {currentLineup.addedBy ?? "alguien"}.
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-2.5">
         <button
           onClick={() => setOutcome("Blancos")}

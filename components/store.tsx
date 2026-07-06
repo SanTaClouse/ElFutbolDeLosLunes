@@ -78,6 +78,11 @@ interface AppContextValue {
   tapPlayer: (team: "w" | "b", idx: number) => void;
   shareMsg: string;
 
+  // formación confirmada (compartida para todo el grupo)
+  currentLineup: GameEvent | null;
+  teamsEdited: boolean;
+  confirmLineup: () => Promise<void>;
+
   // register
   outcome: Outcome | null;
   setOutcome: (o: Outcome | null) => void;
@@ -113,6 +118,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [whites, setWhites] = useState<BuilderSlot[]>([]);
   const [blacks, setBlacks] = useState<BuilderSlot[]>([]);
   const [selected, setSelected] = useState<Selected>(null);
+  const [teamsEdited, setTeamsEdited] = useState(false);
 
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [modal, setModal] = useState<
@@ -132,6 +138,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [players, events]
   );
   const leader = standings[0] ?? null;
+
+  // Formación vigente: el último lineup no quitado, posterior al último
+  // partido registrado. Registrar un resultado la "consume" solo.
+  const currentLineup = useMemo(() => {
+    let lastMatch = "";
+    for (const ev of events) {
+      if (ev.removed) continue;
+      if (ev.type === "result" || ev.type === "draw") {
+        if (ev.createdAt > lastMatch) lastMatch = ev.createdAt;
+      }
+    }
+    let lineup: GameEvent | null = null;
+    for (const ev of events) {
+      if (ev.removed || ev.type !== "lineup") continue;
+      if (ev.createdAt > lastMatch && (!lineup || ev.createdAt > lineup.createdAt)) {
+        lineup = ev;
+      }
+    }
+    return lineup;
+  }, [events]);
 
   const refresh = useCallback(async () => {
     const repo = getRepo();
@@ -169,6 +195,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [refresh]);
 
+  // refresca al volver a la app (foco/visibilidad): así se ve la formación
+  // que confirmó otro sin necesidad de recargar
+  useEffect(() => {
+    if (!ready) return;
+    const onFocus = () => {
+      refresh().catch(() => {});
+    };
+    const onVis = () => {
+      if (document.visibilityState === "visible") onFocus();
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [ready, refresh]);
+
   const doParse = useCallback(
     (shuffle: boolean) => {
       const resolved = parseRoster(builderInput, players, standings, 10);
@@ -178,16 +222,52 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setBlacks(balanced.blacks);
       setSelected(null);
       setOutcome(null);
+      setTeamsEdited(true);
     },
     [builderInput, players, standings]
   );
 
-  // auto-arma una vez con el ejemplo cuando cargan los datos
+  // Hidrata el builder: si hay formación confirmada la aplica (una vez por id,
+  // así una re-confirmación de otro pisa lo local); si no, auto-arma una vez
+  // con el ejemplo cuando cargan los datos.
+  const appliedLineupId = useRef<string | null>(null);
   useEffect(() => {
-    if (ready && players.length > 0 && whites.length === 0) {
+    if (!ready || players.length === 0) return;
+    if (currentLineup) {
+      if (appliedLineupId.current === currentLineup.id) return;
+      const byId = new Map(players.map((p) => [p.id, p]));
+      const stById = new Map(standings.map((s) => [s.player.id, s]));
+      const slotsOf = (ids?: string[]) =>
+        (ids ?? []).flatMap((id) => {
+          const p = byId.get(id);
+          if (!p) return []; // uuid huérfano (jugador borrado): se saltea
+          return [
+            toSlot({
+              raw: p.name,
+              name: p.name,
+              playerId: p.id,
+              known: true,
+              standing: stById.get(p.id) ?? null,
+            }),
+          ];
+        });
+      const w = slotsOf(currentLineup.teamWhite);
+      const b = slotsOf(currentLineup.teamBlack);
+      if (w.length + b.length === 0) {
+        // todos los uuids quedaron huérfanos: cae al armado normal
+        if (whites.length === 0) doParse(false);
+        return;
+      }
+      appliedLineupId.current = currentLineup.id;
+      setWhites(w);
+      setBlacks(b);
+      setSelected(null);
+      setOutcome(null);
+      setTeamsEdited(false);
+    } else if (whites.length === 0) {
       doParse(false);
     }
-  }, [ready, players.length, whites.length, doParse]);
+  }, [ready, players, standings, currentLineup, whites.length, doParse]);
 
   const showToast = useCallback((msg: string) => {
     const id = ++toastId.current;
@@ -268,27 +348,50 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setWhites(w);
       setBlacks(b);
       setSelected(null);
+      setTeamsEdited(true);
     },
     [selected, whites, blacks]
   );
 
+  // Resuelve slots a jugadores reales (crea los que no existen todavía).
+  const resolveSlots = useCallback(async (slots: BuilderSlot[]) => {
+    const repo = getRepo();
+    const result: { slot: BuilderSlot; id: string }[] = [];
+    for (const s of slots) {
+      let id = s.playerId;
+      if (!id) {
+        const p = await repo.addPlayer(s.name);
+        id = p.id;
+      }
+      result.push({ slot: { ...s, playerId: id }, id });
+    }
+    return result;
+  }, []);
+
+  const confirmLineup = useCallback(async () => {
+    if (whites.length === 0 || blacks.length === 0) return;
+    const w = await resolveSlots(whites);
+    const b = await resolveSlots(blacks);
+    const ev = await getRepo().addLineup({
+      teamWhite: w.map((x) => x.id),
+      teamBlack: b.map((x) => x.id),
+      addedBy: user || "Alguien",
+    });
+    setWhites(w.map((x) => x.slot));
+    setBlacks(b.map((x) => x.slot));
+    // el refresh trae el evento nuevo; el ref evita que la hidratación
+    // vuelva a pisar el estado que acabamos de confirmar
+    appliedLineupId.current = ev.id;
+    setTeamsEdited(false);
+    await refresh();
+    showToast("Equipos confirmados ✓");
+  }, [whites, blacks, user, resolveSlots, refresh, showToast]);
+
   const confirmResult = useCallback(async () => {
     if (!outcome || whites.length === 0) return;
     const repo = getRepo();
-    const resolve = async (slots: BuilderSlot[]) => {
-      const result: { slot: BuilderSlot; id: string }[] = [];
-      for (const s of slots) {
-        let id = s.playerId;
-        if (!id) {
-          const p = await repo.addPlayer(s.name);
-          id = p.id;
-        }
-        result.push({ slot: { ...s, playerId: id }, id });
-      }
-      return result;
-    };
-    const w = await resolve(whites);
-    const b = await resolve(blacks);
+    const w = await resolveSlots(whites);
+    const b = await resolveSlots(blacks);
     await repo.addResult({
       outcome,
       teamWhite: w.map((x) => x.id),
@@ -304,7 +407,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         : "Resultado guardado ✓"
     );
     setTab("historial");
-  }, [outcome, whites, blacks, refresh, showToast]);
+  }, [outcome, whites, blacks, resolveSlots, refresh, showToast]);
 
   const openExtra = useCallback(() => setModal("extra"), []);
   const closeModal = useCallback(() => setModal(null), []);
@@ -404,6 +507,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     doParse,
     tapPlayer,
     shareMsg,
+    currentLineup,
+    teamsEdited,
+    confirmLineup,
     outcome,
     setOutcome,
     confirmResult,
