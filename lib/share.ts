@@ -1,7 +1,7 @@
 import { BuilderSlot } from "./balance";
 import { Standing } from "./types";
 
-export const APP_URL = "https://futboldeloslunes.vercel.app";
+export const APP_URL = "https://elfutboldeloslunes.vercel.app";
 
 export interface SharedTeams {
   w: string[]; // nombres blancos
